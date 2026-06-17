@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WuWa Joki — Queue Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================
+   ✏️  EDIT NOMOR WA & DATA ANTRIAN DI BAGIAN PALING BAWAH
+   ========================================================== */
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --c-bg:       #080b12;
+  --c-surface:  #0d1120;
+  --c-card:     #111827;
+  --c-card2:    #141c2e;
+  --c-border:   rgba(255,255,255,0.055);
+  --c-border2:  rgba(255,255,255,0.10);
+
+  --c-gold:     #d4a843;
+  --c-gold2:    #f5cc6a;
+  --c-gold-d:   rgba(212,168,67,0.12);
+  --c-gold-b:   rgba(212,168,67,0.28);
+
+  --c-cyan:     #38bdf8;
+  --c-cyan-d:   rgba(56,189,248,0.10);
+  --c-cyan-b:   rgba(56,189,248,0.28);
+
+  --c-green:    #34d399;
+  --c-green-d:  rgba(52,211,153,0.10);
+  --c-green-b:  rgba(52,211,153,0.28);
+
+  --c-violet:   #a78bfa;
+  --c-violet-d: rgba(167,139,250,0.10);
+  --c-violet-b: rgba(167,139,250,0.28);
+
+  --c-red:      #f87171;
+  --c-red-d:    rgba(248,113,113,0.10);
+  --c-red-b:    rgba(248,113,113,0.28);
+
+  --c-teal:     #2dd4bf;
+  --c-teal-d:   rgba(45,212,191,0.10);
+  --c-teal-b:   rgba(45,212,191,0.28);
+
+  --c-amber:    #fbbf24;
+  --c-amber-d:  rgba(251,191,36,0.10);
+  --c-amber-b:  rgba(251,191,36,0.28);
+
+  --c-orange:   #fb923c;
+  --c-orange-d: rgba(251,146,60,0.10);
+  --c-orange-b: rgba(251,146,60,0.28);
+
+  --c-text:     #e2e8f0;
+  --c-muted:    #64748b;
+  --c-dim:      #334155;
+
+  --r-sm:  8px;
+  --r-md:  12px;
+  --r-lg:  18px;
+  --r-xl:  24px;
+}
+
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+
+body{
+  background:var(--c-bg);
+  color:var(--c-text);
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:15px;
+  line-height:1.6;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── ambient glow ── */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(212,168,67,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 80% 80%, rgba(56,189,248,0.04) 0%, transparent 50%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ── layout ── */
+.wrap{
+  position:relative;
+  z-index:1;
+  max-width:720px;
+  margin:0 auto;
+  padding:48px 20px 80px;
+}
+
+/* ════════════════════════════════
+   HERO HEADER
+════════════════════════════════ */
+.hero{
+  text-align:center;
+  margin-bottom:48px;
+}
+
+.hero-eyebrow{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:var(--c-gold-d);
+  border:0.5px solid var(--c-gold-b);
+  border-radius:99px;
+  padding:5px 14px;
+  font-size:10px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--c-gold);
+  font-weight:600;
+  margin-bottom:20px;
+}
+
+.hero-dot{
+  width:5px;height:5px;
+  border-radius:50%;
+  background:var(--c-gold);
+  animation:throb 2s infinite;
+}
+
+@keyframes throb{
+  0%,100%{transform:scale(1);opacity:1}
+  50%{transform:scale(1.6);opacity:.5}
+}
+
+.hero-title{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(26px,6vw,44px);
+  font-weight:900;
+  line-height:1.1;
+  letter-spacing:2px;
+  color:#fff;
+  margin-bottom:6px;
+}
+
+.hero-title span{
+  background:linear-gradient(135deg,#d4a843 0%,#f5cc6a 40%,#d4a843 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+.hero-sub{
+  font-size:13px;
+  color:var(--c-muted);
+  letter-spacing:1px;
+  margin-bottom:28px;
+}
+
+/* decorative line */
+.hero-rule{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:0 auto;
+  max-width:300px;
+}
+.hero-rule-line{
+  flex:1;height:1px;
+  background:linear-gradient(90deg,transparent,var(--c-gold-b),transparent);
+}
+.hero-rule-gem{
+  width:8px;height:8px;
+  background:var(--c-gold);
+  transform:rotate(45deg);
+  opacity:.6;
+}
+
+/* ════════════════════════════════
+   STATS BAR
+════════════════════════════════ */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:36px;
+}
+
+.stat{
+  background:var(--c-card);
+  border:0.5px solid var(--c-border);
+  border-radius:var(--r-lg);
+  padding:18px 12px 14px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+
+.stat::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+  border-radius:var(--r-lg) var(--r-lg) 0 0;
+}
+.stat.s-green::before{background:linear-gradient(90deg,transparent,var(--c-green),transparent)}
+.stat.s-gold::before {background:linear-gradient(90deg,transparent,var(--c-gold),transparent)}
+.stat.s-cyan::before {background:linear-gradient(90deg,transparent,var(--c-cyan),transparent)}
+
+.stat-val{
+  font-family:'Orbitron',monospace;
+  font-size:36px;
+  font-weight:700;
+  line-height:1;
+  margin-bottom:6px;
+}
+.s-green .stat-val{color:var(--c-green)}
+.s-gold  .stat-val{color:var(--c-gold)}
+.s-cyan  .stat-val{color:var(--c-cyan)}
+
+.stat-lbl{
+  font-size:10px;
+  letter-spacing:2.5px;
+  text-transform:uppercase;
+  color:var(--c-muted);
+  font-weight:500;
+}
+
+/* ════════════════════════════════
+   EMPTY STATE — HERO SLOT
+════════════════════════════════ */
+.empty-hero{
+  display:none;
+  background:linear-gradient(135deg,rgba(52,211,153,0.06),rgba(56,189,248,0.04));
+  border:1px solid rgba(52,211,153,0.2);
+  border-radius:var(--r-xl);
+  padding:36px 28px;
+  text-align:center;
+  margin-bottom:36px;
+  position:relative;
+  overflow:hidden;
+}
+
+.empty-hero::before{
+  content:'';
+  position:absolute;
+  top:-60px;left:50%;
+  transform:translateX(-50%);
+  width:200px;height:200px;
+  background:radial-gradient(circle,rgba(52,211,153,0.12),transparent 70%);
+  pointer-events:none;
+}
+
+.empty-hero.show{display:block}
+
+.empty-hero-icon{
+  font-size:48px;
+  margin-bottom:12px;
+  display:block;
+}
+
+.empty-hero-title{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(15px,3.5vw,20px);
+  font-weight:700;
+  color:var(--c-green);
+  letter-spacing:1px;
+  margin-bottom:8px;
+  line-height:1.3;
+}
+
+.empty-hero-sub{
+  font-size:13px;
+  color:var(--c-muted);
+  margin-bottom:22px;
+  max-width:320px;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+/* ════════════════════════════════
+   WA BUTTON (shared style)
+════════════════════════════════ */
+.wa-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  background:#25d366;
+  color:#fff;
+  text-decoration:none;
+  border-radius:99px;
+  padding:12px 24px;
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:.3px;
+  transition:transform .15s,box-shadow .15s,opacity .15s;
+  box-shadow:0 0 24px rgba(37,211,102,0.25);
+  border:none;
+  cursor:pointer;
+}
+.wa-btn:hover{transform:translateY(-2px);box-shadow:0 4px 32px rgba(37,211,102,0.35);opacity:.95}
+.wa-btn:active{transform:scale(.97)}
+
+.wa-btn svg{width:20px;height:20px;flex-shrink:0;fill:#fff}
+
+/* ════════════════════════════════
+   FLOATING WA STRIP
+════════════════════════════════ */
+.wa-strip{
+  background:var(--c-card);
+  border:0.5px solid rgba(37,211,102,0.18);
+  border-radius:var(--r-xl);
+  padding:18px 22px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:36px;
+  flex-wrap:wrap;
+}
+
+.wa-strip-copy{flex:1;min-width:180px}
+
+.wa-strip-title{
+  font-weight:600;
+  font-size:14px;
+  color:var(--c-text);
+  margin-bottom:2px;
+}
+
+.wa-strip-sub{
+  font-size:12px;
+  color:var(--c-muted);
+}
+
+.wa-btn-sm{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:#25d366;
+  color:#fff;
+  text-decoration:none;
+  border-radius:99px;
+  padding:10px 20px;
+  font-size:13px;
+  font-weight:600;
+  transition:transform .15s,opacity .15s;
+  white-space:nowrap;
+}
+.wa-btn-sm:hover{opacity:.88;transform:translateY(-1px)}
+.wa-btn-sm svg{width:17px;height:17px;fill:#fff;flex-shrink:0}
+
+/* ════════════════════════════════
+   SECTION HEADING
+════════════════════════════════ */
+.sec-head{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.sec-pip{
+  width:3px;height:20px;
+  border-radius:3px;
+  flex-shrink:0;
+}
+.pip-green{background:var(--c-green)}
+.pip-gold {background:var(--c-gold)}
+.pip-gray {background:var(--c-dim)}
+
+.sec-label{
+  font-size:10px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--c-muted);
+  font-weight:600;
+}
+
+.sec-count{
+  margin-left:auto;
+  font-size:11px;
+  color:var(--c-dim);
+  background:rgba(255,255,255,.04);
+  border:0.5px solid var(--c-border);
+  border-radius:99px;
+  padding:2px 10px;
+}
+
+/* ════════════════════════════════
+   QUEUE LIST
+════════════════════════════════ */
+.q-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-bottom:32px;
+}
+
+/* ════════════════════════════════
+   CARD
+════════════════════════════════ */
+.card{
+  background:var(--c-card);
+  border:0.5px solid var(--c-border);
+  border-radius:var(--r-lg);
+  padding:0;
+  display:grid;
+  grid-template-columns:4px 1fr;
+  overflow:hidden;
+  transition:border-color .2s,transform .15s;
+  position:relative;
+}
+
+.card:hover{border-color:var(--c-border2);transform:translateX(2px)}
+
+.card-accent{
+  width:4px;
+  flex-shrink:0;
+}
+.card.proses  .card-accent{background:linear-gradient(180deg,var(--c-green),rgba(52,211,153,.3))}
+.card.antri   .card-accent{background:linear-gradient(180deg,var(--c-gold),rgba(212,168,67,.3))}
+.card.selesai .card-accent{background:var(--c-dim)}
+
+.card-body{
+  padding:16px 18px;
+  display:grid;
+  grid-template-columns:44px 1fr auto;
+  align-items:center;
+  gap:14px;
+}
+
+/* avatar */
+.av{
+  width:44px;height:44px;
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Orbitron',monospace;
+  font-size:13px;font-weight:700;
+  flex-shrink:0;
+  position:relative;
+}
+
+.av.proses{
+  background:var(--c-green-d);
+  color:var(--c-green);
+  border:0.5px solid var(--c-green-b);
+}
+.av.antri{
+  background:var(--c-gold-d);
+  color:var(--c-gold);
+  border:0.5px solid var(--c-gold-b);
+}
+.av.selesai{
+  background:rgba(30,40,55,.6);
+  color:var(--c-muted);
+  border:0.5px solid var(--c-border);
+}
+
+/* proses pulse ring */
+.av.proses::after{
+  content:'';
+  position:absolute;
+  inset:-3px;
+  border-radius:14px;
+  border:1px solid rgba(52,211,153,.25);
+  animation:ring 2s linear infinite;
+}
+@keyframes ring{
+  0%{opacity:1;transform:scale(1)}
+  100%{opacity:0;transform:scale(1.15)}
+}
+
+/* info block */
+.card-info{}
+
+.card-name{
+  font-weight:600;
+  font-size:15px;
+  color:var(--c-text);
+  margin-bottom:5px;
+  letter-spacing:.2px;
+}
+
+.card-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+}
+
+.tag{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:3px 9px;
+  border-radius:99px;
+  font-size:11px;
+  font-weight:500;
+  letter-spacing:.2px;
+  line-height:1.4;
+}
+
+.tag-rank   {background:var(--c-violet-d);color:var(--c-violet);border:0.5px solid var(--c-violet-b)}
+.tag-story  {background:var(--c-cyan-d);  color:var(--c-cyan);  border:0.5px solid var(--c-cyan-b)}
+.tag-boss   {background:var(--c-red-d);   color:var(--c-red);   border:0.5px solid var(--c-red-b)}
+.tag-tower  {background:var(--c-teal-d);  color:var(--c-teal);  border:0.5px solid var(--c-teal-b)}
+.tag-farming{background:var(--c-amber-d); color:var(--c-amber); border:0.5px solid var(--c-amber-b)}
+.tag-abyss  {background:var(--c-orange-d);color:var(--c-orange);border:0.5px solid var(--c-orange-b)}
+
+/* status right */
+.card-right{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:5px;
+  min-width:70px;
+}
+
+.status-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:4px 11px;
+  border-radius:99px;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+
+.status-pill.proses {background:var(--c-green-d);color:var(--c-green);border:0.5px solid var(--c-green-b)}
+.status-pill.antri  {background:var(--c-gold-d); color:var(--c-gold); border:0.5px solid var(--c-gold-b)}
+.status-pill.selesai{background:rgba(30,40,55,.5);color:var(--c-muted);border:0.5px solid var(--c-border)}
+
+.sdot{
+  width:5px;height:5px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+.sdot.proses {background:var(--c-green);animation:blink 1.8s infinite}
+.sdot.antri  {background:var(--c-gold)}
+.sdot.selesai{background:var(--c-muted)}
+
+@keyframes blink{
+  0%,100%{opacity:1}50%{opacity:.25}
+}
+
+.q-pos{
+  font-size:10px;
+  color:var(--c-muted);
+  letter-spacing:.5px;
+}
+
+/* empty section msg */
+.q-empty{
+  font-size:13px;
+  color:var(--c-dim);
+  padding:6px 0;
+  font-style:italic;
+}
+
+/* ════════════════════════════════
+   FOOTER
+════════════════════════════════ */
+.footer{
+  text-align:center;
+  padding-top:28px;
+  border-top:0.5px solid var(--c-border);
+}
+
+.footer-text{
+  font-size:11px;
+  color:var(--c-dim);
+  letter-spacing:2px;
+  text-transform:uppercase;
+}
+
+.footer-gem{
+  display:inline-block;
+  width:6px;height:6px;
+  background:var(--c-gold);
+  transform:rotate(45deg);
+  opacity:.4;
+  margin:0 8px;
+  vertical-align:3px;
+}
+
+/* ════════════════════════════════
+   RESPONSIVE
+════════════════════════════════ */
+@media(max-width:520px){
+  .wrap{padding:32px 14px 64px}
+  .card-body{grid-template-columns:36px 1fr auto;gap:10px;padding:14px 14px}
+  .av{width:36px;height:36px;border-radius:9px;font-size:11px}
+  .card-name{font-size:14px}
+  .wa-strip{flex-direction:column;text-align:center}
+  .wa-strip-copy{text-align:center}
+  .stats{gap:8px}
+  .stat-val{font-size:28px}
+  .hero-title{letter-spacing:1px}
+  .card-right{min-width:60px}
+  .status-pill{padding:3px 8px;font-size:9px;letter-spacing:1px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ══ HERO ══ -->
+  <header class="hero">
+    <div class="hero-eyebrow">
+      <div class="hero-dot"></div>
+      Joki Service — Live Board
+    </div>
+    <h1 class="hero-title">WUTHERING<br><span>WAVES</span></h1>
+    <p class="hero-sub">Status antrian real-time · Update manual</p>
+    <div class="hero-rule">
+      <div class="hero-rule-line"></div>
+      <div class="hero-rule-gem"></div>
+      <div class="hero-rule-line"></div>
+    </div>
+  </header>
+
+  <!-- ══ STATS ══ -->
+  <div class="stats">
+    <div class="stat s-green">
+      <div class="stat-val" id="sProses">0</div>
+      <div class="stat-lbl">Proses</div>
+    </div>
+    <div class="stat s-gold">
+      <div class="stat-val" id="sAntri">0</div>
+      <div class="stat-lbl">Antrian</div>
+    </div>
+    <div class="stat s-cyan">
+      <div class="stat-val" id="sSelesai">0</div>
+      <div class="stat-lbl">Selesai</div>
+    </div>
+  </div>
+
+  <!-- ══ EMPTY HERO — muncul otomatis saat semua kosong ══ -->
+  <div class="empty-hero" id="emptyHero">
+    <span class="empty-hero-icon">⚡</span>
+    <div class="empty-hero-title">Slot Kosong!<br>Jokianmu bisa langsung diproses!</div>
+    <p class="empty-hero-sub">Tidak ada antrian saat ini. Order sekarang dan langsung kita kerjakan!</p>
+    <a class="wa-btn" id="waBtnHero" href="#" rel="noopener">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Chat Sekarang — Langsung Proses!
+    </a>
+  </div>
+
+  <!-- ══ WA STRIP ══ -->
+  <div class="wa-strip">
+    <div class="wa-strip-copy">
+      <div class="wa-strip-title">Mau masuk antrian?</div>
+      <div class="wa-strip-sub">Hubungi kami via WhatsApp untuk booking slot.</div>
+    </div>
+    <a class="wa-btn-sm" id="waBtnStrip" href="#" rel="noopener">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Hubungi Joki
+    </a>
+  </div>
+
+  <!-- ══ PROSES ══ -->
+  <div class="sec-head">
+    <div class="sec-pip pip-green"></div>
+    <div class="sec-label">Sedang Diproses</div>
+    <div class="sec-count" id="cProses"></div>
+  </div>
+  <div class="q-list" id="qProses"></div>
+
+  <!-- ══ ANTRIAN ══ -->
+  <div class="sec-head">
+    <div class="sec-pip pip-gold"></div>
+    <div class="sec-label">Antrian</div>
+    <div class="sec-count" id="cAntri"></div>
+  </div>
+  <div class="q-list" id="qAntri"></div>
+
+  <!-- ══ SELESAI ══ -->
+  <div class="sec-head">
+    <div class="sec-pip pip-gray"></div>
+    <div class="sec-label">Selesai</div>
+    <div class="sec-count" id="cSelesai"></div>
+  </div>
+  <div class="q-list" id="qSelesai"></div>
+
+  <footer class="footer">
+    <div class="footer-text">
+      <span class="footer-gem"></span>
+      WuWa Joki Service
+      <span class="footer-gem"></span>
+    </div>
+  </footer>
+
+</div><!-- /wrap -->
+
+<script>
+/* ================================================================
+   ✏️  EDIT DI SINI
+   ================================================================ */
+
+/* Nomor WhatsApp (format internasional tanpa + atau spasi) */
+const WA_NUMBER = "628990658845";
+
+/* Pesan WA default (tombol strip bawah) */
+const WA_PESAN_ANTRI = "Halo kak, saya mau booking slot joki Wuthering Waves!";
+
+/* Pesan WA saat slot kosong (langsung proses) */
+const WA_PESAN_LANGSUNG = "Halo kak! Saya lihat slot kosong, mau order joki WuWa dan langsung diproses sekarang!";
+
+/* ----------------------------------------------------------------
+   DATA ANTRIAN
+   Status: "proses" | "antri" | "selesai"
+   Tipe  : "rank" | "story" | "boss" | "tower" | "farming" | "abyss"
+
+   Contoh entry:
+   { nama:"NamaPlayer", joki:"Keterangan order", tipe:"rank", status:"antri" },
+   ---------------------------------------------------------------- */
+const DATA = [
+  /* ← tambahkan data di sini, kosongkan array untuk empty state */
+
+];
+
+/* ================================================================
+   JANGAN EDIT DI BAWAH INI
+   ================================================================ */
+
+const TIPE = {
+  rank:    { cls:"tag-rank",    icon:"🏆", label:"Rank Push"  },
+  story:   { cls:"tag-story",   icon:"📖", label:"Story"      },
+  boss:    { cls:"tag-boss",    icon:"💀", label:"Boss"       },
+  tower:   { cls:"tag-tower",   icon:"🗼", label:"Tower"      },
+  farming: { cls:"tag-farming", icon:"⚙️", label:"Farming"    },
+  abyss:   { cls:"tag-abyss",  icon:"🔥", label:"Abyss"      },
+};
+
+const SL = { proses:"Proses", antri:"Antri", selesai:"✓ Selesai" };
+
+function waUrl(msg){ return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`; }
+
+function initials(n){
+  return n.replace(/[^a-zA-Z\s]/g,"").trim().split(/\s+/).map(w=>w[0]||"").join("").toUpperCase().slice(0,2)||"??";
+}
+
+function card(item, rankTxt, qIdx){
+  const t = TIPE[item.tipe]||TIPE.rank;
+  const pos = item.status==="antri" ? `<div class="q-pos">Antrian ke-${qIdx}</div>` : "";
+  const avTxt = item.status==="selesai" ? "✓" : rankTxt;
+  return `
+<div class="card ${item.status}">
+  <div class="card-accent"></div>
+  <div class="card-body">
+    <div class="av ${item.status}">${avTxt}</div>
+    <div class="card-info">
+      <div class="card-name">${item.nama}</div>
+      <div class="card-tags">
+        <span class="tag ${t.cls}">${t.icon} ${item.joki}</span>
+      </div>
+    </div>
+    <div class="card-right">
+      <div class="status-pill ${item.status}">
+        <div class="sdot ${item.status}"></div>${SL[item.status]}
+      </div>
+      ${pos}
+    </div>
+  </div>
+</div>`;
+}
+
+function render(){
+  const proses  = DATA.filter(d=>d.status==="proses");
+  const antri   = DATA.filter(d=>d.status==="antri");
+  const selesai = DATA.filter(d=>d.status==="selesai");
+
+  /* stats */
+  document.getElementById("sProses").textContent  = proses.length;
+  document.getElementById("sAntri").textContent   = antri.length;
+  document.getElementById("sSelesai").textContent = selesai.length;
+
+  /* counts */
+  document.getElementById("cProses").textContent  = proses.length  ? `${proses.length} aktif`  : "";
+  document.getElementById("cAntri").textContent   = antri.length   ? `${antri.length} orang`   : "";
+  document.getElementById("cSelesai").textContent = selesai.length ? `${selesai.length} done`   : "";
+
+  /* cards */
+  let rank=1;
+
+  document.getElementById("qProses").innerHTML = proses.length
+    ? proses.map(d=>card(d,rank++,null)).join("")
+    : `<div class="q-empty">Tidak ada yang sedang diproses.</div>`;
+
+  document.getElementById("qAntri").innerHTML = antri.length
+    ? antri.map((d,i)=>card(d,rank++,i+1)).join("")
+    : `<div class="q-empty">Antrian kosong.</div>`;
+
+  document.getElementById("qSelesai").innerHTML = selesai.length
+    ? selesai.map(d=>card(d,"✓",null)).join("")
+    : `<div class="q-empty">Belum ada yang selesai.</div>`;
+
+  /* empty hero */
+  const allEmpty = proses.length===0 && antri.length===0;
+  document.getElementById("emptyHero").classList.toggle("show", allEmpty);
+
+  /* wa links */
+  const normal   = waUrl(WA_PESAN_ANTRI);
+  const langsung = waUrl(WA_PESAN_LANGSUNG);
+  document.getElementById("waBtnStrip").href = normal;
+  document.getElementById("waBtnHero").href  = allEmpty ? langsung : normal;
+}
+
+render();
+</script>
+</body>
+</html>
